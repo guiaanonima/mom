@@ -1,34 +1,43 @@
 from multiprocessing.dummy import Pool as ThreadPool
+import argparse
 import requests
 import sys
 
+parser = argparse.ArgumentParser(description='Buscador de diretórios web')
 
-url = sys.argv[1]
-wordlist = sys.argv[2]
-threads = sys.argv[3]
+parser.add_argument('-u', '--url',  dest='url',
+                    help='Url do site alvo')
 
-file = open(wordlist, "r", encoding="utf8", errors='ignore')
-wordlist = file.readlines()
+parser.add_argument('-w', '--wordlist', dest='wordlist',
+                    help='Caminho da wordlist')
 
-try:
-    if sys.argv[4] == 'ssl':
-        ssl = True
-except:
+parser.add_argument('-t', '--threads', dest='threads',
+                    help='Threads', default=1)
+
+parser.add_argument('-s', '--ssl', help='false ou true',
+                    required=False, default=False)
+
+args = parser.parse_args()
+
+if args.ssl == 'true':
+    ssl = True
+else:
     ssl = False
+
+file = open(args.wordlist, "r", encoding="utf8", errors='ignore')
+wordlist = file.readlines()
 
 
 def node_request(senha):
-    if senha.startswith("#"):
-        pass
-    else:
+    if not senha.startswith("#"):
         senha = senha.replace("\n", "")
-        r = requests.get(f'{url}/{senha}', verify=ssl, stream=True)
+        r = requests.get(f'{args.url}/{senha}', verify=ssl, stream=True)
         if r.status_code < 400:
-            print(f'Found: {url}/{senha} - {r.status_code}')
+            print(f'Found: {args.url}/{senha} - {r.status_code}')
 
 
 print('Rodando...')
-pool = ThreadPool(int(threads))
+pool = ThreadPool(int(args.threads))
 results = pool.map(node_request, wordlist)
 
 pool.close()
