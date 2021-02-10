@@ -8,9 +8,10 @@ url = sys.argv[1]
 file = open(sys.argv[2], "r", encoding="utf8", errors='ignore')
 wordlist = file.readlines()
 
-if sys.argv[4] == 'true':
-    ssl = True
-else:
+try:
+    if sys.argv[4] == 'ssl':
+        ssl = True
+except:
     ssl = False
 
 def node_request(senha):
