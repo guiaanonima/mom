@@ -17,10 +17,13 @@ except:
 def node_request(senha):
     global url
     global ssl
-    senha = senha.replace("\n", "")
-    r = requests.get(f'{url}/{senha}', verify=ssl, stream=True)
-    if r.status_code < 400:
-        print(f'Url:{url}/{senha} - Status Code :{r.status_code}')
+    if senha.startswith("#"):
+        pass
+    else:
+        senha = senha.replace("\n", "")
+        r = requests.get(f'{url}/{senha}', verify=ssl, stream=True)
+        if r.status_code < 400:
+            print(f'Url:{url}/{senha} - Status Code :{r.status_code}')
 
 print('Rodando...')
 pool = ThreadPool(int(sys.argv[3]))
