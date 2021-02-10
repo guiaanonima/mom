@@ -6,13 +6,12 @@ import sys
 url = sys.argv[1]
 wordlist = sys.argv[2]
 threads = sys.argv[3]
-ssl = sys.argv[4]
 
 file = open(wordlist, "r", encoding="utf8", errors='ignore')
 wordlist = file.readlines()
 
 try:
-    if ssl == 'ssl':
+    if sys.argv[4] == 'ssl':
         ssl = True
 except:
     ssl = False
