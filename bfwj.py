@@ -12,7 +12,11 @@ wordlist = file.readlines()
 def node_request(senha):
     global url
     senha = senha.replace("\n", "")
-    r = requests.get(f'{url}/{senha}', verify=False, stream=True)
+    try:
+        r = requests.get(f'{url}/{senha}', verify=False, stream=True)
+    except:
+        r = requests.get(f'{url}/{senha}', verify=True, stream=True)
+
     if r.status_code < 400:
         print(f'Url:{url}/{senha} - Status Code :{r.status_code}')
 
