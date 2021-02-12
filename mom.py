@@ -19,10 +19,14 @@ parser.add_argument('-t', '--threads', dest='threads',
 parser.add_argument('-s', '--ssl', help='false ou true',
                     required=False, default=False)
 
+parser.add_argument('-sc', help='Requisições com status code válidos. EX: -sc 200,301',
+                    required=False, default=False)
+
 args = parser.parse_args()
 
 if len(sys.argv) < 2:
     parser.print_help()
+    exit(1)
 
 if args.ssl == 'true':
     ssl = True
