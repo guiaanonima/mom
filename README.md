@@ -2,7 +2,7 @@
 
 - Example
 
-# MOM - Porque assim como uma mãe, essa ferramenta acha tudo
+# MOM - Porque assim como uma mãe, essa ferramenta sempre acha :)
 
 ![](https://raw.githubusercontent.com/Willianjesusdasilva/mom/main/assets/logo.png)
 
