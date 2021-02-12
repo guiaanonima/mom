@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from multiprocessing.dummy import Pool as ThreadPool
 import argparse
 import requests
@@ -18,6 +20,9 @@ parser.add_argument('-s', '--ssl', help='false ou true',
                     required=False, default=False)
 
 args = parser.parse_args()
+
+if len(sys.argv) < 2:
+    parser.print_help()
 
 if args.ssl == 'true':
     ssl = True
