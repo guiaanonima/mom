@@ -41,15 +41,15 @@ def openWordlistIterator(args):
     return wordlist # retorna a classe iteradora #
 
 def nodeRequest(directory, args):
-    if not directory.startswith("#"):
-        response = get(f'{args.url}/{directory}', verify=args.ssl, stream=True)
+    if not directory.startswith("#") and directory.strip():
+        response = get(f'{args.url}/{directory.strip()}', verify=args.ssl, stream=True)
         if response.status_code < 400:
-            print(f'Found: {args.url}/{directory} - {response.status_code}')
+            print(f'Found: {args.url}/{directory.strip()} - {response.status_code}')
 
 def fullNodeRequest(directory, args):
-    if not directory.startswith("#"):
-        response = get(f'{args.url}/{directory}', verify=args.ssl, stream=True)
-        print(f'Found: {args.url}/{directory} - {response.status_code}')
+    if not directory.startswith("#") and directory.strip():
+        response = get(f'{args.url}/{directory.strip()}', verify=args.ssl, stream=True)
+        print(f'Found: {args.url}/{directory.strip()} - {response.status_code}')
 
 def startPool(wordlist, args):
     try:
