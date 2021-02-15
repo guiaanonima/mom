@@ -1,51 +1,80 @@
 #!/usr/bin/env python3
 
 from multiprocessing.dummy import Pool as ThreadPool
-import argparse
-import requests
-import sys
+from parserArguments import createSetupParser
+from termcolor import colored
+from requests import get, packages
+from pathlib import Path
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
+from wordlistIterator import WordlistIterator
+from functools import partial
 
-parser = argparse.ArgumentParser(description='Buscador de diretórios web')
+packages.urllib3.disable_warnings(InsecureRequestWarning) # desativa os warnings chatos quando não se utiliza o protocolo https em específico na requisição #
 
-parser.add_argument('-u', '--url',  dest='url',
-                    help='Url do site alvo')
+def verifyWordlistFile(namefile):
+    if(Path(namefile).is_file()):
+        return True
+    else:
+        return False
 
-parser.add_argument('-w', '--wordlist', dest='wordlist',
-                    help='Caminho da wordlist')
+def checkBasicNamespaceArguments(parser, namespace):
+    if(namespace.url and namespace.wordlist): # parametros basicos para a busca #
+        if(verifyWordlistFile(namespace.wordlist)):
+            pass
+        else:
+            print(colored(f' * A  wordlist: {namespace.wordlist} não foi encontrada.\n', 'red'))
+            parser.print_help()
+            exit(1)
+    else:
+        print(colored(f' * Passe todos os argumentos válidos antes de continuar.\n', 'red'))
+        parser.print_help()
+        exit(1)
 
-parser.add_argument('-t', '--threads', dest='threads',
-                    help='Threads', default=1)
+def verifyHttpProtocol(url): # evita o erro requests.exceptions.MissingSchema quando uma url é passada sem um dos protocolos padroes: http ou https
+    if(url.startswith('http://') or url.startswith('https://')):
+        return url
+    else:
+        return f'http://{url}'
 
-parser.add_argument('-s', '--ssl', help='false ou true',
-                    required=False, default=False)
+def openWordlistIterator(args):
+    wordlist = WordlistIterator(args.wordlist)
+    return wordlist # retorna a classe iteradora #
+
+def nodeRequest(directory, args):
+    if not directory.startswith("#"):
+        response = get(f'{args.url}/{directory}', verify=args.ssl, stream=True)
+        if response.status_code < 400:
+            print(f'Found: {args.url}/{directory} - {response.status_code}')
+
+def fullNodeRequest(directory, args):
+    if not directory.startswith("#"):
+        response = get(f'{args.url}/{directory}', verify=args.ssl, stream=True)
+        print(f'Found: {args.url}/{directory} - {response.status_code}')
+
+def startPool(wordlist, args):
+    try:
+        full = {True: fullNodeRequest, False: nodeRequest}
+        
+        try:
+            pool = ThreadPool(int(args.threads))
+        except ValueError:
+            print(colored(f' Erro, passe o argumento threads em um número inteiro', 'red'))
+            exit(1)
+        pool.map(partial(full.get(args.full), args=args), wordlist) # roda a funcao fazendo requisição para cada diretorio na wordlist iteradora #
+        pool.close()
+        pool.join()
+
+    except KeyboardInterrupt:
+        print()
+        exit(0)
 
 
-args = parser.parse_args()
+def main():
+    parser, args = createSetupParser() # cria os parametros e retorna o parser configurado e seus argumentos #
+    checkBasicNamespaceArguments(parser, args) # checa alguns argumentos basicos para rodar o programa #
+    args.url = verifyHttpProtocol(args.url) # verifica se a url informada contem algum dos protocolos web #
 
-if len(sys.argv) < 2:
-    parser.print_help()
-    exit(1)
+    startPool(openWordlistIterator(args), args)
 
-if args.ssl == 'true':
-    ssl = True
-else:
-    ssl = False
-
-file = open(args.wordlist, "r", encoding="utf8", errors='ignore')
-wordlist = file.readlines()
-
-
-def node_request(senha):
-    if not senha.startswith("#"):
-        senha = senha.replace("\n", "")
-        r = requests.get(f'{args.url}/{senha}', verify=ssl, stream=True)
-        if r.status_code < 400:
-            print(f'Found: {args.url}/{senha} - {r.status_code}')
-
-
-print('Rodando...')
-pool = ThreadPool(int(args.threads))
-results = pool.map(node_request, wordlist)
-
-pool.close()
-pool.join()
+if __name__ == '__main__':
+    main()
