@@ -10,8 +10,8 @@ class WordlistIterator(object):
         return self
     
     def __next__(self):
-        self.currentLine = self.wordlist.readline().strip()
-        if self.currentLine:
-            return self.currentLine
+        self.currentLine = self.wordlist.readline()
+        if not self.currentLine:
+            raise StopIteration
         
-        raise StopIteration
+        return self.currentLine
