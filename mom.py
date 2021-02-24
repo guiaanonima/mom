@@ -8,6 +8,10 @@ from pathlib import Path
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from wordlistIterator import WordlistIterator
 from functools import partial
+from tqdm import tqdm
+
+
+
 
 packages.urllib3.disable_warnings(InsecureRequestWarning) # desativa os warnings chatos quando não se utiliza o protocolo https em específico na requisição #
 
@@ -16,6 +20,12 @@ def verifyWordlistFile(namefile):
         return True
     else:
         return False
+
+def wordlistCounter(args):
+    wordlist_count = open(args.wordlist, 'r+')
+    counter = len(wordlist_count.readlines())
+    wordlist_count.close()
+    return counter 
 
 def checkBasicNamespaceArguments(parser, namespace):
     if(namespace.url and namespace.wordlist): # parametros basicos para a busca #
@@ -41,15 +51,19 @@ def openWordlistIterator(args):
     return wordlist # retorna a classe iteradora #
 
 def nodeRequest(directory, args):
+    #global progressBar
     if not directory.startswith("#") and directory.strip():
         response = get(f'{args.url}/{directory.strip()}', verify=args.ssl, stream=True)
         if response.status_code < 400:
             print(f'Found: {args.url}/{directory.strip()} - {response.status_code}')
+    #progressBar.update(1)
 
 def fullNodeRequest(directory, args):
+    #global progressBar
     if not directory.startswith("#") and directory.strip():
         response = get(f'{args.url}/{directory.strip()}', verify=args.ssl, stream=True)
         print(f'Found: {args.url}/{directory.strip()} - {response.status_code}')
+    #progressBar.update(1)
 
 def startPool(wordlist, args):
     try:
@@ -73,6 +87,7 @@ def main():
     parser, args = createSetupParser() # cria os parametros e retorna o parser configurado e seus argumentos #
     checkBasicNamespaceArguments(parser, args) # checa alguns argumentos basicos para rodar o programa #
     args.url = verifyHttpProtocol(args.url) # verifica se a url informada contem algum dos protocolos web #
+    #progressBar = tqdm(total=wordlistCounter(args))
 
     startPool(openWordlistIterator(args), args)
 
