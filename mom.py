@@ -55,7 +55,7 @@ def nodeRequest(directory, args):
     if not directory.startswith("#") and directory.strip():
         response = get(f'{args.url}/{directory.strip()}', verify=args.ssl, stream=True)
         if response.status_code < 400:
-            print(f'Found: {args.url}/{directory.strip()} - {response.status_code}')
+            print(f'Found: {args.url}/{directory.strip()} -> {response.status_code}')
     #progressBar.update(1)
 
 def fullNodeRequest(directory, args):
@@ -88,8 +88,25 @@ def main():
     checkBasicNamespaceArguments(parser, args) # checa alguns argumentos basicos para rodar o programa #
     args.url = verifyHttpProtocol(args.url) # verifica se a url informada contem algum dos protocolos web #
     #progressBar = tqdm(total=wordlistCounter(args))
-
+    
     startPool(openWordlistIterator(args), args)
+    
 
 if __name__ == '__main__':
+    print("""
+
+        888b     d888  .d88888b.  888b     d888
+        8888b   d8888 d88P" "Y88b 8888b   d8888
+        88888b.d88888 888     888 88888b.d88888
+        888Y88888P888 888     888 888Y88888P888
+        888 Y888P 888 888     888 888 Y888P 888
+        888  Y8P  888 888     888 888  Y8P  888
+        888   "   888 Y88b. .d88P 888   "   888
+        888       888  "Y88888P"  888       888
+                    MOM OF MAINFRAME
+                    ----------------
+by: @canalguiaanonima , @kaio_gomesx , @williansilva.py
+                    ----------------
+
+    """)
     main()
