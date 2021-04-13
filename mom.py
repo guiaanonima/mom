@@ -1,25 +1,24 @@
 #!/usr/bin/env python3
 
-from multiprocessing.dummy import Pool as ThreadPool
+from shutil import get_terminal_size
+from progressBar import ProgressBar
 from parserArguments import createSetupParser
 from termcolor import colored
 from requests import get, packages
 from pathlib import Path
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from wordlistIterator import WordlistIterator
-from functools import partial
-from tqdm import tqdm
-
-
-
 
 packages.urllib3.disable_warnings(InsecureRequestWarning) # desativa os warnings chatos quando não se utiliza o protocolo https em específico na requisição #
+
+def cleanPrint(message):
+    columns, lines = get_terminal_size((80, 20)) # numero de colunas e linhas do terminal #
+    print(message + ' ' * (columns-len(message)))
 
 def verifyWordlistFile(namefile):
     if(Path(namefile).is_file()):
         return True
-    else:
-        return False
+    return False
 
 def wordlistCounter(args):
     wordlist_count = open(args.wordlist, 'r+')
@@ -51,49 +50,38 @@ def openWordlistIterator(args):
     return wordlist # retorna a classe iteradora #
 
 def nodeRequest(directory, args):
-    #global progressBar
     if not directory.startswith("#") and directory.strip():
         response = get(f'{args.url}/{directory.strip()}', verify=args.ssl, stream=True)
         if response.status_code < 400:
-            print(f'Found: {args.url}/{directory.strip()} -> {response.status_code}')
-    #progressBar.update(1)
-
+            cleanPrint(f'Found: {args.url}/{directory.strip()} -> {response.status_code}')
+            return True
+        
 def fullNodeRequest(directory, args):
-    #global progressBar
     if not directory.startswith("#") and directory.strip():
         response = get(f'{args.url}/{directory.strip()}', verify=args.ssl, stream=True)
-        print(f'Found: {args.url}/{directory.strip()} - {response.status_code}')
-    #progressBar.update(1)
+        cleanPrint(f'Found: {args.url}/{directory.strip()} -> {response.status_code}')
+        if response.status_code < 400:
+            return True
 
-def startPool(wordlist, args):
+def run(wordlist, args):
+    full = {True: fullNodeRequest, False: nodeRequest}
+    pbar = ProgressBar(wordlistCounter(args))
+    counter = 0
     try:
-        full = {True: fullNodeRequest, False: nodeRequest}
-        
-        try:
-            pool = ThreadPool(int(args.threads))
-        except ValueError:
-            print(colored(f' Erro, passe o argumento threads em um número inteiro', 'red'))
-            exit(1)
-        pool.map(partial(full.get(args.full), args=args), wordlist) # roda a funcao fazendo requisição para cada diretorio na wordlist iteradora #
-        pool.close()
-        pool.join()
+        for word in wordlist:
+            alive = full.get(args.full)(word, args)
+            if alive:
+                counter += 1
+            pbar.update()
+
+        cleanPrint(f'{counter}/{wordlistCounter(args)} diretorios encontrados!')
 
     except KeyboardInterrupt:
         print()
         exit(0)
 
-
-def main():
-    parser, args = createSetupParser() # cria os parametros e retorna o parser configurado e seus argumentos #
-    checkBasicNamespaceArguments(parser, args) # checa alguns argumentos basicos para rodar o programa #
-    args.url = verifyHttpProtocol(args.url) # verifica se a url informada contem algum dos protocolos web #
-    #progressBar = tqdm(total=wordlistCounter(args))
-    
-    startPool(openWordlistIterator(args), args)
-    
-
-if __name__ == '__main__':
-    print("""
+def screenfetch():
+    return """
 
         888b     d888  .d88888b.  888b     d888
         8888b   d8888 d88P" "Y88b 8888b   d8888
@@ -108,5 +96,16 @@ if __name__ == '__main__':
 by: @canalguiaanonima , @kaio_gomesx , @williansilva.py
                     ----------------
 
-    """)
+    """
+
+def main():
+    print(screenfetch())
+    parser, args = createSetupParser() # cria os parametros e retorna o parser configurado e seus argumentos #
+    checkBasicNamespaceArguments(parser, args) # checa alguns argumentos basicos para rodar o programa #
+    args.url = verifyHttpProtocol(args.url) # verifica se a url informada contem algum dos protocolos web #
+    
+    run(openWordlistIterator(args), args)
+    
+
+if __name__ == '__main__':
     main()
