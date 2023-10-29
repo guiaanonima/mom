@@ -1,6 +1,6 @@
 from argparse import ArgumentParser
 
-def createSetupParser():
+def create_setup_parser():
     parser = ArgumentParser(description='Buscador de diretórios web')
     
     parser.add_argument('-u', '--url',  dest='url',
