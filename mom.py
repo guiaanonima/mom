@@ -51,19 +51,25 @@ def node_request(directory, args):
     responses = {200: '[green]', 404  : '[red]'}
 
     if not directory.startswith("#") and directory.strip():
-        response = get(f'{args.url}/{directory.strip()}', verify=args.ssl, stream=True)
-        if str(response.status_code) in args.match.split(','):
-            clean_print(f'Found: {args.url}/{directory.strip()} -> {responses.get(response.status_code)}{response.status_code}{responses.get(response.status_code)}', len(responses.get(response.status_code)))
-            return True
+        try:
+            response = get(f'{args.url}/{directory.strip()}', verify=args.ssl, stream=True)
+            if str(response.status_code) in args.match.split(','):
+                clean_print(f'Found: {args.url}/{directory.strip()} -> {responses.get(response.status_code)}{response.status_code}{responses.get(response.status_code)}', len(responses.get(response.status_code)))
+                return True
+        except Exception as error:
+            print(error)
 
 def full_node_request(directory, args):
-    responses = {200: '[green]', 404: '[red]'}
-    
-    if not directory.startswith("#") and directory.strip():
-        response = get(f'{args.url}/{directory.strip()}', verify=args.ssl, stream=True)
-        clean_print(f'Found: {args.url}/{directory.strip()} -> {responses.get(response.status_code)}{response.status_code}{responses.get(response.status_code)}', len(responses.get(response.status_code)))
-        if response.status_code < 400:
-            return True
+    try:
+        responses = {200: '[green]', 404: '[red]'}
+        
+        if not directory.startswith("#") and directory.strip():
+            response = get(f'{args.url}/{directory.strip()}', verify=args.ssl, stream=True)
+            clean_print(f'Found: {args.url}/{directory.strip()} -> {responses.get(response.status_code)}{response.status_code}{responses.get(response.status_code)}', len(responses.get(response.status_code)))
+            if response.status_code < 400:
+                return True
+    except Exception as error:
+            print(error)
 
 def run(wordlist, args):
     full = {True: full_node_request, False: node_request}
