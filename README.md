@@ -24,7 +24,7 @@
 
 
 ## O que é o MoM?
-A MoM (Man of Mainframe) é uma ferramenta desenvolvida em python, destinado a achar subdiretórios dentro de dominios que o usuário específicar. Ela faz 
+A MoM (Mon of Mainframe) é uma ferramenta desenvolvida em python, destinado a achar subdiretórios dentro de dominios que o usuário específicar. Ela faz 
 a varredura em cada subdiretório, atrás de outros diretórios que podem estar disponíveis.
 
 ## Pré-requisitos
